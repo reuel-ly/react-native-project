@@ -1,49 +1,79 @@
-import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
-import {useState} from 'react';
+import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import GoalInput from './components/GoalInput';
+import GoalList from './components/GoalList';
+import ModalHero from './components/ModalHero';
+import NavBar from './components/NavBar';
+import WarningModal from './components/WarningModal';
 
 export default function App() {
 
-  const [goalText, setGoalText] = useState('');
   const [courseGoals, setCourseGoals] = useState([]);
+  const [modalVisible, setModalVisible] = useState(true);
+  const [activeTab, setActiveTab] = useState('goals');
+  const [warningVisible, setWarningVisible] = useState(false);
 
-  function goalInputHandler(enteredText){
-    setGoalText(enteredText)
-  };
-  function addGoalHandler(){
-    setCourseGoals((currentCourseGoals) =>[
-      ...currentCourseGoals,
-      goalText,
-    ]);
-  };
+  function addGoalHandler(goal) {
+  setCourseGoals((currentGoals) => {
+    const updatedGoals = [
+      ...currentGoals,
+      { text: goal, key: Math.random().toString() }
+    ];
 
+    if (updatedGoals.length > 5) {
+      setWarningVisible(true);
+    }
+
+    return updatedGoals;
+  });
+  }
+
+  function continueHandler() {
+    setModalVisible(false);
+  }
+
+  function tabHandler(tabName){
+    setActiveTab(tabName);
+    }
+
+  
+
+  function deleteGoalHandler(key) {
+    setCourseGoals((currentCourseGoals) =>
+      currentCourseGoals.filter((goal) => goal.key !== key)
+    );
+  }
 
   return (
     <View style={styles.appContainer}>
       
-      <View style={styles.inputContainer}>
-        <TextInput style={styles.textInput}
-        placeholder='Your Course Goal' 
-        placeholderTextColor='#999'
-        onChangeText={goalInputHandler}
-        />
-        
-        <View style={styles.button}>
-          <Button 
-          color = '#4f9667'
-          title='Add Goal'
-          onPress={addGoalHandler}
-          />
-        </View>
-        
-      </View>
+      <ModalHero
+        visible={modalVisible}
+        onContinue={continueHandler}
+      />
       
-      <View style={styles.goalsContainer}>
-        {courseGoals.map((goal, key) => (
-          <View key={key} style={styles.goalItem}>
-            <Text style={styles.goalText} key={key}>{goal}</Text>
-          </View>
-          ))}
-      </View>
+      <NavBar 
+        activeTab={activeTab}
+        onTabPress={tabHandler}
+      />
+
+      <GoalInput
+        onAddGoal={addGoalHandler}
+      />
+
+
+
+      <GoalList 
+        courseGoals={courseGoals}
+        onDeleteGoal={deleteGoalHandler} 
+      />
+
+      <WarningModal 
+        visible={warningVisible}
+        onClose={() => setWarningVisible(false)}
+        text = {'You have more than 5 goals. Don’t overwhelm yourself!'}
+      />
+      
 
     </View>
   );
@@ -58,56 +88,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 50,
     paddingHorizontal: 16,
-  },
-
-  textInput: {
-    width: '70%',
-    marginRight: 8,
-    padding: 13,
-    borderWidth: 2,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    fontSize: 16,
-  },
-
-  inputContainer: {
-    flex: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-    borderBottomWidth: 2,
-    borderBottomColor: '#ccc',
-  },
-
-  goalsContainer: {
-    width: '100%',
-    flex: 5,
-  },
-
-  button: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#4f9667',
-    borderRadius: 10,
-    overflow: 'hidden',
-    height: 45,
-  },
-
-  goalItem: {
-    width: '100%',
-    padding: 12,
-    marginVertical: 6,
-    backgroundColor: '#f0f8f3',
-    borderWidth: 1,
-    borderColor: '#4f9667',
-    borderRadius: 8,
-  },
-
-  goalText: {
-    fontSize: 16,
-    color: '#333',
-    alignItems: 'flex-end',
   },
 
 });
